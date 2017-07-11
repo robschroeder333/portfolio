@@ -1,6 +1,7 @@
 import React from 'react';
+import Home from '../components/home.js';
 
 export default () => (
-  <h1>hello world</h1>
+  <Home />
 );
 
