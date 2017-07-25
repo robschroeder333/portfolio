@@ -1,7 +1,7 @@
 //
 // action types
 
-const TOGGLE_INFO = 'TOGGLE_INFO';
+export const TOGGLE_INFO = 'TOGGLE_INFO';
 
 //
 // action creators
