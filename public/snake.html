@@ -4,6 +4,10 @@
         <meta charset="UTF-8">
     </head>
     <body>
+        <h3>High Score: </h3>
+        <h3 id="highScore"></h3>
+        <h2>Score: </h2>
+        <h2 id="score"></h2>
         <canvas id="gc" width="400" height="400"></canvas>
 
         <script type="text/javascript" >
@@ -13,11 +17,25 @@
             var fps = 10;
             var scale = 20;
 
+            function onSwitch(string) {
+                return confirm(`Would you like to play${string}?`);
+            }
+
             window.onload=function() {
-                canv=document.getElementById("gc");
-                ctx=canv.getContext("2d");
+                score = document.getElementById("score");
+                score.innerText = 0;
+
+                highScore = document.getElementById("highScore");
+                highScore.innerText = 0;
+
+                canv = document.getElementById("gc");
+                ctx = canv.getContext("2d");
+
                 document.addEventListener("keydown", keyPush);
-                setInterval(gameLoop, 1000/fps);
+
+                if(onSwitch('?')){
+                    intervalId = setInterval(gameLoop, 1000/fps);
+                }
             }
 
             // pallette
@@ -45,8 +63,8 @@
 
             function gameLoop() {
 
-            var width = canv.width/scale;
-            var height = canv.height/scale;
+                var width = canv.width/scale;
+                var height = canv.height/scale;
                 var currentTrail = this.trail;
 
                 // move snake
@@ -95,7 +113,17 @@
                     );
 
                     if(currentTrail[i].x === posX && currentTrail[i].y === posY) {
-                        tail = 5;
+
+                        if(tail !== 5) {
+                            tail = 5;
+                            if(!onSwitch(' again')) {
+                                clearInterval(intervalId);
+                            } else {
+                                if(highScore.innerText < score.innerText){
+                                    highScore.innerText = score.innerText;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -108,6 +136,7 @@
 
                 if(foodX === posX && foodY === posY) {
                     tail++;
+                    score.innerText = tail - 5;
                     foodX = Math.floor(Math.random() * scale);
                     foodY = Math.floor(Math.random() * scale);
                 }
