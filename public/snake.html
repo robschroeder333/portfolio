@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <canvas id="gc" width="400" height="400"></canvas>
+
+        <script type="text/javascript" >
+
+            // speed and size of game
+            ////
+            var fps = 10;
+            var scale = 20;
+
+            window.onload=function() {
+                canv=document.getElementById("gc");
+                ctx=canv.getContext("2d");
+                document.addEventListener("keydown", keyPush);
+                setInterval(gameLoop, 1000/fps);
+            }
+
+            // pallette
+            ////
+            var color1 = "#a2cc86"
+            var color2 = "#749161"
+            var color3 = "#5b724b"
+
+            // positions
+            ////
+            var posX = 10;
+            var posY = 10;
+            var foodX = 15;
+            var foodY = 15;
+
+            // direction
+            ////
+            var velX = 0;
+            var velY = 0;
+
+            // snake
+            ////
+            var trail = [];
+            tail = 5;
+
+            function gameLoop() {
+
+            var width = canv.width/scale;
+            var height = canv.height/scale;
+                var currentTrail = this.trail;
+
+                // move snake
+                ////
+                posX += velX;
+                posY += velY;
+
+                // make gameboard "endless"
+                ////
+                if(posX < 0) {
+                    posX = width - 1;
+                }
+
+                if(posX > width - 1) {
+                    posX = 0;
+                }
+
+                if(posY < 0) {
+                    posY = height - 1;
+                }
+
+                if(posY > height - 1) {
+                    posY = 0;
+                }
+
+                // create background
+                ////
+                ctx.fillStyle = color1;
+                ctx.fillRect(
+                    0,
+                    0,
+                    canv.width,
+                    canv.height
+                );
+
+                // create snake
+                ////
+                ctx.fillStyle = color2;
+                for(var i = 0; i < currentTrail.length; i++) {
+
+                    ctx.fillRect(
+                        currentTrail[i].x * width,
+                        currentTrail[i].y * height,
+                        width - 2,
+                        height - 2
+                    );
+
+                    if(currentTrail[i].x === posX && currentTrail[i].y === posY) {
+                        tail = 5;
+                    }
+                }
+
+                // have tail follow heads path (only for length of tail)
+                ////
+                trail.push({x:posX, y:posY});
+                while(trail.length > tail) {
+                    trail.shift();
+                }
+
+                if(foodX === posX && foodY === posY) {
+                    tail++;
+                    foodX = Math.floor(Math.random() * scale);
+                    foodY = Math.floor(Math.random() * scale);
+                }
+
+                // create food
+                ////
+                ctx.fillStyle = color3;
+                ctx.fillRect(
+                    foodX * width,
+                    foodY * height,
+                    width - 2 ,
+                    height - 2
+                );
+            }
+
+            // player input
+            ////
+            function keyPush(e) {
+                e.preventDefault();
+                switch(e.keyCode) {
+                    case 37: //left
+                        velX = -1;
+                        velY = 0;
+                        break;
+                    case 38: //up
+                        velX = 0;
+                        velY = -1;
+                        break;
+                    case 39: //right
+                        velX = 1;
+                        velY = 0;
+                        break;
+                    case 40: //down
+                        velX = 0;
+                        velY = 1;
+                        break;
+                }
+            }
+        </script>
+    </body>
+</html>
