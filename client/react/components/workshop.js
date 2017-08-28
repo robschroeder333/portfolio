@@ -5,5 +5,6 @@ export default () => (
   <div>
     <h1>Workshop</h1>
     <h1><Link to="/js">Javascript</Link></h1>
+    <h1><Link to="/jquery">Jquery</Link></h1>
   </div>
 )

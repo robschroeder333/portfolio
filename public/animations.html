@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="http://gsgd.co.uk/sandbox/jquery/easing/jquery.easing.1.3.js"></script>
+  </head>
+  <body>
+    <ul>
+      <li class="1">One</li>
+      <li class="2">Two</li>
+      <li class="3">Three</li>
+      <li class="4">Four</li>
+
+      <script>
+        $( "li.1" ).hover(
+          function() {
+            $(this)//.filter(':not(:animated)')
+            .animate(
+              { height: "70px" },
+              2000,
+              'easeInBounce',
+              {queue: false}
+            )
+        },
+        function() {
+          $(this).animate(
+            { height: "20px" },
+            200,
+            //'easeOutBounce',
+            {queue: false}
+          );
+        }
+      );
+      </script>
+    </ul>
+  </body>
+</html>
