@@ -6,6 +6,17 @@ const maxRest = 100;
 const maxHappiness = 100;
 const needsThreshold = 50;
 
+// Utils
+////
+const changeLocation = (current, change) => {
+  const newLocation = [];
+  newLocation.push(current[0] + change[0]);
+  newLocation.push(current[1] + change[1]);
+  return newLocation;
+};
+
+// Classes
+////
 class Creature {
   constructor(name, location, food, water, rest, happiness) {
     this.name = name;
@@ -22,6 +33,8 @@ class Creature {
 
     this.happiness = maxHappiness / 2;
     this.happinessRate = happiness;
+
+    this.isAlive = true;
   }
   prioritizeNeeds() {
     const needsArray = [this.food, this.water, this.rest, this.happiness]
@@ -47,28 +60,63 @@ class Creature {
 
     switch (highestIndex) {
       case 0:
-        priority = 'food';
+        this.tryToEat();
         break;
       case 1:
-        priority = 'water';
+        this.tryToDrink();
         break;
-      case 2:
-        priority = 'rest';
-        break;
-      case 3:
-        priority = 'happiness';
-        break;
+      // case 2:
+      //   priority = 'rest';
+      //   break;
+      // case 3:
+      //   priority = 'happiness';
+      //   break;
       default:
-        priority = 'water';
+        this.tryToDrink();
         break;
     }
 
-    return priority;
   }
 
-  consume(item) {
-    this.food += item.foodValue;
-    this.water += item.waterValue;
+  tryToEat() {
+    const here = world[this.location[0]][this.location[1]]
+    if (here.actions.forage !== undefined) {
+      this.forage(here.actions.forage);
+    } else {
+      this.travel();
+    }
+  }
+
+  tryToDrink() {
+    const here = world[this.location[0]][this.location[1]]
+    if (here.actions.drink !== undefined) {
+      this.drink(here.actions.drink);
+    } else {
+      this.travel();
+    }
+  }
+
+  updateNeeds() {
+    this.food -= this.foodRate;
+    this.water -= this.waterRate;
+    this.rest -= this.restRate;
+    this.happiness -= this.happinessRate;
+
+    if (this.food < 0 || this.water < 0 || this.rest < 0) {
+      this.isAlive = false;
+    }
+  }
+
+  // Actions
+  ////
+  forage(item) {
+    this.food = Math.min(this.food + item.foodValue, maxFood);
+    console.log(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1].name]}.`)
+  }
+
+  drink(item) {
+    this.water = Math.min(this.water + item.waterValue, maxWater);
+    console.log(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1].name]}.`)
   }
 
   rest() {
@@ -76,7 +124,49 @@ class Creature {
   }
 
   travel() {
+    const direction = Math.floor(Math.random() * (4 - 0) + 0);
+    let newLoc = null;
+    switch (direction) {
+      case 0: //Up
+        newLoc = changeLocation(this.location, [0,1]);
+        if (world[newLoc].name === undefined) {
+          this.travel();
+        } else {
+          this.location = newLoc;
+          console.log(`${this.name} moved to ${world[this.location].name}`);
+        }
+        break;
+      case 1: //Right
+        newLoc = changeLocation(this.location, [1,0]);
+        if (world[newLoc].name === undefined) {
+          this.travel();
+        } else {
+          this.location = newLoc;
+          console.log(`${this.name} moved to ${world[this.location].name}`);
+        }
+        break;
+      case 2: //Down
+        newLoc = changeLocation(this.location, [0,-1]);
+        if (world[newLoc].name === undefined) {
+          this.travel();
+        } else {
+          this.location = newLoc;
+          console.log(`${this.name} moved to ${world[this.location].name}`);
+        }
+        break;
+      case 3: //Left
+        newLoc = changeLocation(this.location, [-1,0]);
+        if (world[newLoc].name === undefined) {
+          this.travel();
+        } else {
+          this.location = newLoc;
+          console.log(`${this.name} moved to ${world[this.location].name}`);
+        }
+        break;
 
+      default:
+        break;
+    }
   }
 }
 
@@ -111,6 +201,17 @@ class Consumable extends Item {
   }
 }
 
+// Instances
+////
+const conWater = new Consumable('water', 0, 70);
+const conBerries = new Consumable('berries', 30, 0);
+
+const testCreature = new Creature('test', [2,2], 15, 30, 0, 0);
+
+const arrayOfLife = [testCreature];
+
+// GameWorld
+////
 const world = [
   [
     {
@@ -123,7 +224,10 @@ const world = [
       name: 'residences'
     },
     {
-      name: 'woods'
+      name: 'woods',
+      actions: {
+        drink: conWater
+      }
     }
   ],
   [
@@ -134,7 +238,10 @@ const world = [
       name: 'tavern'
     },
     {
-      name: 'river'
+      name: 'river',
+      actions: {
+        drink: conWater
+      }
     }
   ],
   [
@@ -145,8 +252,21 @@ const world = [
       name: 'cave'
     },
     {
-      name: 'lake'
+      name: 'lake',
+      actions: {
+        drink: conWater,
+        forage: conBerries
+      }
     }
   ]
 ]
 
+const gameLoop = () => {
+  arrayOfLife.forEach(livingThing => {
+    if (livingThing.isAlive) {
+      livingThing.prioritizeNeeds();
+      livingThing.updateNeeds();
+    }
+  });
+  console.log('Day over...');
+}
