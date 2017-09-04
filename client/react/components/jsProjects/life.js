@@ -1,10 +1,10 @@
-const timespan = 1; //one cycle per day
+const timespan = 2; //one cycle per day
 
 const maxFood = 100;
 const maxWater = 100;
 const maxRest = 100;
 const maxHappiness = 100;
-const needsThreshold = 50;
+const needsThreshold = 100;
 
 // Utils
 ////
@@ -36,23 +36,23 @@ class Creature {
 
     this.isAlive = true;
   }
+
   prioritizeNeeds() {
-    const needsArray = [this.food, this.water, this.rest, this.happiness]
+    const needsArray = [this.food, this.water, this.rest, this.happiness];
     let highestIndex = 0;
-    let priority = null;
 
     if (needsArray[0] > needsThreshold
       && needsArray[1] > needsThreshold
       && needsArray[2] > needsThreshold
     ) {
       for (let i = 1; i < needsArray.length; i++) {
-        if (needsArray[highestIndex] < needsArray[i]) {
+        if (needsArray[highestIndex] > needsArray[i]) {
           highestIndex = i;
         }
       }
     } else {
       for (let i = 1; i < needsArray.length - 1; i++) {
-        if (needsArray[highestIndex] < needsArray[i]) {
+        if (needsArray[highestIndex] > needsArray[i]) {
           highestIndex = i;
         }
       }
@@ -65,12 +65,12 @@ class Creature {
       case 1:
         this.tryToDrink();
         break;
-      // case 2:
-      //   priority = 'rest';
-      //   break;
-      // case 3:
-      //   priority = 'happiness';
-      //   break;
+      case 2:
+        console.log('attempt to rest');
+        break;
+      case 3:
+        console.log('attempt to be happy');
+        break;
       default:
         this.tryToDrink();
         break;
@@ -79,7 +79,7 @@ class Creature {
   }
 
   tryToEat() {
-    const here = world[this.location[0]][this.location[1]]
+    const here = world[this.location[0]][this.location[1]];
     if (here.actions.forage !== undefined) {
       this.forage(here.actions.forage);
     } else {
@@ -88,7 +88,7 @@ class Creature {
   }
 
   tryToDrink() {
-    const here = world[this.location[0]][this.location[1]]
+    const here = world[this.location[0]][this.location[1]];
     if (here.actions.drink !== undefined) {
       this.drink(here.actions.drink);
     } else {
@@ -96,14 +96,19 @@ class Creature {
     }
   }
 
+
   updateNeeds() {
     this.food -= this.foodRate;
     this.water -= this.waterRate;
     this.rest -= this.restRate;
     this.happiness -= this.happinessRate;
 
+    // for testing
+    // console.log(`${this.name} rates are: food=${this.food} water=${this.water} rest=${this.rest} happiness=${this.happiness}`)
+
     if (this.food < 0 || this.water < 0 || this.rest < 0) {
       this.isAlive = false;
+      console.log(`${this.name} has perished.`);
     }
   }
 
@@ -111,12 +116,12 @@ class Creature {
   ////
   forage(item) {
     this.food = Math.min(this.food + item.foodValue, maxFood);
-    console.log(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1].name]}.`)
+    console.log(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`)
   }
 
   drink(item) {
     this.water = Math.min(this.water + item.waterValue, maxWater);
-    console.log(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1].name]}.`)
+    console.log(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`)
   }
 
   rest() {
@@ -129,38 +134,38 @@ class Creature {
     switch (direction) {
       case 0: //Up
         newLoc = changeLocation(this.location, [0,1]);
-        if (world[newLoc].name === undefined) {
-          this.travel();
-        } else {
+        if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location].name}`);
+          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+        } else {
+          this.travel();
         }
         break;
       case 1: //Right
         newLoc = changeLocation(this.location, [1,0]);
-        if (world[newLoc].name === undefined) {
-          this.travel();
-        } else {
+        if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location].name}`);
+          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+        } else {
+          this.travel();
         }
         break;
       case 2: //Down
         newLoc = changeLocation(this.location, [0,-1]);
-        if (world[newLoc].name === undefined) {
-          this.travel();
-        } else {
+        if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location].name}`);
+          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+        } else {
+          this.travel();
         }
         break;
       case 3: //Left
         newLoc = changeLocation(this.location, [-1,0]);
-        if (world[newLoc].name === undefined) {
-          this.travel();
-        } else {
+        if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location].name}`);
+          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+        } else {
+          this.travel();
         }
         break;
 
@@ -206,7 +211,7 @@ class Consumable extends Item {
 const conWater = new Consumable('water', 0, 70);
 const conBerries = new Consumable('berries', 30, 0);
 
-const testCreature = new Creature('test', [2,2], 15, 30, 0, 0);
+const testCreature = new Creature('creature', [2,2], 15 / timespan, 30 / timespan, 0, 0);
 
 const arrayOfLife = [testCreature];
 
@@ -221,7 +226,10 @@ const world = [
       }
     },
     {
-      name: 'residences'
+      name: 'residences',
+      actions: {
+
+      }
     },
     {
       name: 'woods',
@@ -232,10 +240,16 @@ const world = [
   ],
   [
     {
-      name: 'smith'
+      name: 'smith',
+      actions: {
+
+      }
     },
     {
-      name: 'tavern'
+      name: 'tavern',
+      actions: {
+
+      }
     },
     {
       name: 'river',
@@ -246,22 +260,30 @@ const world = [
   ],
   [
     {
-      name: 'mountain'
+      name: 'mountain',
+      actions: {
+        drink: conWater
+      }
     },
     {
-      name: 'cave'
+      name: 'cave',
+      actions: {
+        forage: conBerries
+      }
     },
     {
       name: 'lake',
       actions: {
-        drink: conWater,
+        // drink: conWater,
         forage: conBerries
       }
     }
   ]
-]
+];
 
-const gameLoop = () => {
+
+//TODO: make this not a global variable
+gameLoop = () => {
   arrayOfLife.forEach(livingThing => {
     if (livingThing.isAlive) {
       livingThing.prioritizeNeeds();
@@ -269,4 +291,4 @@ const gameLoop = () => {
     }
   });
   console.log('Day over...');
-}
+};
