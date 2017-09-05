@@ -1,4 +1,6 @@
-const timespan = 2; //one cycle per day
+const cyclesPerDay = 2;
+let cycleCounter = 1;
+let dayCounter = 1;
 
 const maxFood = 100;
 const maxWater = 100;
@@ -181,10 +183,10 @@ class Human extends Creature {
     possessions = {},
     name = 'Hue Man',
     location = [0, 1],
-    food = 15 / timespan,
-    water = 30 / timespan,
-    rest = 25 / timespan,
-    happiness = 4 / timespan
+    food = 15 / cyclesPerDay,
+    water = 30 / cyclesPerDay,
+    rest = 25 / cyclesPerDay,
+    happiness = 4 / cyclesPerDay
   ) {
     super(name, food, water, rest, happiness);
     this.money = money;
@@ -208,10 +210,10 @@ class Consumable extends Item {
 
 // Instances
 ////
-const conWater = new Consumable('water', 0, 70);
-const conBerries = new Consumable('berries', 30, 0);
+const water = new Consumable('water', 0, 70);
+const berries = new Consumable('berries', 30, 0);
 
-const testCreature = new Creature('creature', [2,2], 15 / timespan, 30 / timespan, 0, 0);
+const testCreature = new Creature('creature', [2,2], 15 / cyclesPerDay, 30 / cyclesPerDay, 0, 0);
 
 const arrayOfLife = [testCreature];
 
@@ -222,7 +224,7 @@ const world = [
     {
       name: 'market',
       actions: {
-        //browse:
+
       }
     },
     {
@@ -234,7 +236,7 @@ const world = [
     {
       name: 'woods',
       actions: {
-        drink: conWater
+        drink: water
       }
     }
   ],
@@ -254,7 +256,7 @@ const world = [
     {
       name: 'river',
       actions: {
-        drink: conWater
+        drink: water
       }
     }
   ],
@@ -262,20 +264,20 @@ const world = [
     {
       name: 'mountain',
       actions: {
-        drink: conWater
+        drink: water
       }
     },
     {
       name: 'cave',
       actions: {
-        forage: conBerries
+        forage: berries
       }
     },
     {
       name: 'lake',
       actions: {
-        // drink: conWater,
-        forage: conBerries
+        drink: water,
+        forage: berries
       }
     }
   ]
@@ -290,5 +292,12 @@ gameLoop = () => {
       livingThing.updateNeeds();
     }
   });
-  console.log('Day over...');
+
+  if (cycleCounter === cyclesPerDay) {
+    cycleCounter = 1;
+    console.log(`Day ${dayCounter} over...`);
+    dayCounter++;
+  } else {
+    cycleCounter++;
+  }
 };
