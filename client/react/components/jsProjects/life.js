@@ -68,7 +68,7 @@ class Creature {
         this.tryToDrink();
         break;
       case 2:
-        console.log('attempt to rest');
+        this.takeNap();
         break;
       case 3:
         console.log('attempt to be happy');
@@ -118,16 +118,17 @@ class Creature {
   ////
   forage(item) {
     this.food = Math.min(this.food + item.foodValue, maxFood);
-    console.log(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`)
+    console.log(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
   }
 
   drink(item) {
     this.water = Math.min(this.water + item.waterValue, maxWater);
-    console.log(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`)
+    console.log(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
   }
 
-  rest() {
-
+  takeNap() {
+    this.rest = Math.min(this.rest + 70, maxRest);
+    console.log(`${this.name} took a nap near the ${world[this.location[0]][this.location[1]].name}.`);
   }
 
   travel() {
@@ -138,7 +139,7 @@ class Creature {
         newLoc = changeLocation(this.location, [0,1]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -147,7 +148,7 @@ class Creature {
         newLoc = changeLocation(this.location, [1,0]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -156,7 +157,7 @@ class Creature {
         newLoc = changeLocation(this.location, [0,-1]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -165,7 +166,7 @@ class Creature {
         newLoc = changeLocation(this.location, [-1,0]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
-          console.log(`${this.name} moved to ${world[this.location[0]][this.location[1]].name}`);
+          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -195,7 +196,7 @@ class Human extends Creature {
 }
 
 class Item {
-  constructor(name){
+  constructor(name) {
     this.name = name;
   }
 }
@@ -208,12 +209,13 @@ class Consumable extends Item {
   }
 }
 
+
 // Instances
 ////
-const water = new Consumable('water', 0, 70);
+const water = new Consumable('water', 0, 60);
 const berries = new Consumable('berries', 30, 0);
 
-const testCreature = new Creature('creature', [2,2], 15 / cyclesPerDay, 30 / cyclesPerDay, 0, 0);
+const testCreature = new Creature('Creature', [2,2], 15 / cyclesPerDay, 30 / cyclesPerDay, 30 / cyclesPerDay, 0);
 
 const arrayOfLife = [testCreature];
 
