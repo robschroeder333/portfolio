@@ -1,4 +1,4 @@
-const cyclesPerDay = 2;
+const cyclesPerDay = 3;
 let cycleCounter = 1;
 let dayCounter = 1;
 
@@ -6,7 +6,7 @@ const maxFood = 100;
 const maxWater = 100;
 const maxRest = 100;
 const maxHappiness = 100;
-const needsThreshold = 100;
+const needsThreshold = 70;
 
 // Utils
 ////
@@ -33,7 +33,7 @@ class Creature {
     this.rest = maxRest;
     this.restRate = rest;
 
-    this.happiness = maxHappiness / 2;
+    this.happiness = maxHappiness;
     this.happinessRate = happiness;
 
     this.isAlive = true;
@@ -71,8 +71,8 @@ class Creature {
         this.takeNap();
         break;
       case 3:
-        console.log('attempt to be happy');
-        break;
+        this.travel();
+      break;
       default:
         this.tryToDrink();
         break;
@@ -100,13 +100,13 @@ class Creature {
 
 
   updateNeeds() {
-    this.food -= this.foodRate;
-    this.water -= this.waterRate;
-    this.rest -= this.restRate;
-    this.happiness -= this.happinessRate;
+    this.food = +((this.food - this.foodRate).toFixed(2));
+    this.water = +((this.water - this.waterRate).toFixed(2));
+    this.rest = +((this.rest - this.restRate).toFixed(2));
+    this.happiness = +((this.happiness - this.happinessRate).toFixed(2));
 
     // for testing
-    // console.log(`${this.name} rates are: food=${this.food} water=${this.water} rest=${this.rest} happiness=${this.happiness}`)
+    // console.log(`${this.name} rates are: food=${this.food} water=${this.water} rest=${this.rest} happiness=${this.happiness}`);
 
     if (this.food < 0 || this.water < 0 || this.rest < 0) {
       this.isAlive = false;
@@ -132,6 +132,7 @@ class Creature {
   }
 
   travel() {
+
     const direction = Math.floor(Math.random() * (4 - 0) + 0);
     let newLoc = null;
     switch (direction) {
@@ -139,6 +140,7 @@ class Creature {
         newLoc = changeLocation(this.location, [0,1]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
+          this.happiness = Math.min(this.happiness + 20, maxHappiness);
           console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
@@ -148,6 +150,7 @@ class Creature {
         newLoc = changeLocation(this.location, [1,0]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
+          this.happiness = Math.min(this.happiness + 20, maxHappiness);
           console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
@@ -157,6 +160,7 @@ class Creature {
         newLoc = changeLocation(this.location, [0,-1]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
+          this.happiness = Math.min(this.happiness + 20, maxHappiness);
           console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
@@ -166,6 +170,7 @@ class Creature {
         newLoc = changeLocation(this.location, [-1,0]);
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
+          this.happiness = Math.min(this.happiness + 20, maxHappiness);
           console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
@@ -187,9 +192,9 @@ class Human extends Creature {
     food = 15 / cyclesPerDay,
     water = 30 / cyclesPerDay,
     rest = 25 / cyclesPerDay,
-    happiness = 4 / cyclesPerDay
+    happiness = 6 / cyclesPerDay
   ) {
-    super(name, food, water, rest, happiness);
+    super(name, location, food, water, rest, happiness);
     this.money = money;
     this.inventory = possessions;
   }
@@ -212,10 +217,16 @@ class Consumable extends Item {
 
 // Instances
 ////
-const water = new Consumable('water', 0, 60);
-const berries = new Consumable('berries', 30, 0);
+const freshWater = new Consumable('fresh water', 0, 70);
+const stillWater = new Consumable('still water', 0, 50);
+const poolOfWater = new Consumable('pool of water', 0, 30);
 
-const testCreature = new Creature('Creature', [2,2], 15 / cyclesPerDay, 30 / cyclesPerDay, 30 / cyclesPerDay, 0);
+const berries = new Consumable('berries', 20, 0);
+const mushrooms = new Consumable('mushrooms', 40, 0);
+const crayfish = new Consumable('crayfish', 50, 0);
+const trash = new Consumable('trash', 15, 0);
+
+const testCreature = new Human(0, {}, 'Bill', [0,1]);
 
 const arrayOfLife = [testCreature];
 
@@ -226,19 +237,21 @@ const world = [
     {
       name: 'market',
       actions: {
-
+        forage: trash,
+        drink: poolOfWater
       }
     },
     {
       name: 'residences',
       actions: {
-
+        forage: trash
       }
     },
     {
       name: 'woods',
       actions: {
-        drink: water
+        forage: berries,
+        drink: stillWater
       }
     }
   ],
@@ -252,13 +265,15 @@ const world = [
     {
       name: 'tavern',
       actions: {
-
+        forage: trash,
+        drink: freshWater
       }
     },
     {
       name: 'river',
       actions: {
-        drink: water
+        forage: crayfish,
+        drink: freshWater
       }
     }
   ],
@@ -266,19 +281,19 @@ const world = [
     {
       name: 'mountain',
       actions: {
-        drink: water
+        drink: poolOfWater
       }
     },
     {
       name: 'cave',
       actions: {
-        forage: berries
+        forage: mushrooms
       }
     },
     {
       name: 'lake',
       actions: {
-        drink: water,
+        drink: stillWater,
         forage: berries
       }
     }
