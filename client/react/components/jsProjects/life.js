@@ -106,7 +106,7 @@ class Creature {
     this.happiness = +((this.happiness - this.happinessRate).toFixed(2));
 
     // for testing
-    // console.log(`${this.name} rates are: food=${this.food} water=${this.water} rest=${this.rest} happiness=${this.happiness}`);
+    // console.log(`${this.name}== food=${this.food} water=${this.water} rest=${this.rest} happiness=${this.happiness}`);
 
     if (this.food < 0 || this.water < 0 || this.rest < 0) {
       this.isAlive = false;
@@ -212,6 +212,9 @@ class Consumable extends Item {
     this.foodValue = foodValue;
     this.waterValue = waterValue;
   }
+  // consume() {
+
+  // }
 }
 
 
@@ -219,7 +222,7 @@ class Consumable extends Item {
 ////
 const freshWater = new Consumable('fresh water', 0, 70);
 const stillWater = new Consumable('still water', 0, 50);
-const poolOfWater = new Consumable('pool of water', 0, 30);
+const dirtyWater = new Consumable('dirty water', 0, 20);
 
 const berries = new Consumable('berries', 20, 0);
 const mushrooms = new Consumable('mushrooms', 40, 0);
@@ -238,7 +241,7 @@ const world = [
       name: 'market',
       actions: {
         forage: trash,
-        drink: poolOfWater
+        drink: dirtyWater
       }
     },
     {
@@ -281,7 +284,7 @@ const world = [
     {
       name: 'mountain',
       actions: {
-        drink: poolOfWater
+        drink: dirtyWater
       }
     },
     {
