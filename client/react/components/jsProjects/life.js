@@ -8,6 +8,9 @@ const maxRest = 100;
 const maxHappiness = 100;
 const needsThreshold = 70;
 
+const displayQueue = [];
+const queueLength = 10;
+
 // Utils
 ////
 const changeLocation = (current, change) => {
@@ -15,6 +18,20 @@ const changeLocation = (current, change) => {
   newLocation.push(current[0] + change[0]);
   newLocation.push(current[1] + change[1]);
   return newLocation;
+};
+
+const updateLog = () => {
+  const log = document.getElementById('log');
+  const formattedQueue = displayQueue.map(ele => `<li>${ele}</li>`).join('');
+  log.innerHTML = formattedQueue;
+};
+
+const addToQueue = string => {
+  while (displayQueue.length >= queueLength) {
+    displayQueue.shift();
+  }
+  displayQueue.push(string);
+  updateLog();
 };
 
 // Classes
@@ -110,7 +127,7 @@ class Creature {
 
     if (this.food < 0 || this.water < 0 || this.rest < 0) {
       this.isAlive = false;
-      console.log(`${this.name} has perished.`);
+      addToQueue(`${this.name} has perished.`);
     }
   }
 
@@ -118,17 +135,17 @@ class Creature {
   ////
   forage(item) {
     this.food = Math.min(this.food + item.foodValue, maxFood);
-    console.log(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
+    addToQueue(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
   }
 
   drink(item) {
     this.water = Math.min(this.water + item.waterValue, maxWater);
-    console.log(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
+    addToQueue(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
   }
 
   takeNap() {
     this.rest = Math.min(this.rest + 70, maxRest);
-    console.log(`${this.name} took a nap near the ${world[this.location[0]][this.location[1]].name}.`);
+    addToQueue(`${this.name} took a nap near the ${world[this.location[0]][this.location[1]].name}.`);
   }
 
   travel() {
@@ -141,7 +158,7 @@ class Creature {
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
           this.happiness = Math.min(this.happiness + 20, maxHappiness);
-          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
+          addToQueue(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -151,7 +168,7 @@ class Creature {
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
           this.happiness = Math.min(this.happiness + 20, maxHappiness);
-          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
+          addToQueue(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -161,7 +178,7 @@ class Creature {
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
           this.happiness = Math.min(this.happiness + 20, maxHappiness);
-          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
+          addToQueue(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -171,7 +188,7 @@ class Creature {
         if (world[newLoc[0]][newLoc[1]] !== undefined) {
           this.location = newLoc;
           this.happiness = Math.min(this.happiness + 20, maxHappiness);
-          console.log(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
+          addToQueue(`${this.name} moved to the ${world[this.location[0]][this.location[1]].name}`);
         } else {
           this.travel();
         }
@@ -315,7 +332,7 @@ gameLoop = () => {
 
   if (cycleCounter === cyclesPerDay) {
     cycleCounter = 1;
-    console.log(`Day ${dayCounter} over...`);
+    addToQueue(`Day ${dayCounter} over...`);
     dayCounter++;
   } else {
     cycleCounter++;
