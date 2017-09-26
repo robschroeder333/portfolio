@@ -320,9 +320,7 @@ const world = [
   ]
 ];
 
-
-//TODO: make this not a global variable
-gameLoop = () => {
+const gameLoop = () => {
   arrayOfLife.forEach(livingThing => {
     if (livingThing.isAlive) {
       livingThing.prioritizeNeeds();
