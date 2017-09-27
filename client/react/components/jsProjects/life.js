@@ -100,7 +100,7 @@ class Creature {
   tryToEat() {
     const here = world[this.location[0]][this.location[1]];
     if (here.actions.forage !== undefined) {
-      this.forage(here.actions.forage);
+      this.forage(here.actions.forage, here);
     } else {
       this.travel();
     }
@@ -109,7 +109,7 @@ class Creature {
   tryToDrink() {
     const here = world[this.location[0]][this.location[1]];
     if (here.actions.drink !== undefined) {
-      this.drink(here.actions.drink);
+      this.drink(here.actions.drink, here);
     } else {
       this.travel();
     }
@@ -133,22 +133,25 @@ class Creature {
 
   // Actions
   ////
-  forage(item) {
+  forage(item, location) {
     this.food = Math.min(this.food + item.foodValue, maxFood);
-    addToQueue(`${this.name} ate some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
+    addToQueue(`${this.name} ate some ${item.name} from the ${location.name}.`);
   }
 
-  drink(item) {
+  drink(item, location) {
     this.water = Math.min(this.water + item.waterValue, maxWater);
-    addToQueue(`${this.name} drank some ${item.name} from the ${world[this.location[0]][this.location[1]].name}.`);
+    addToQueue(`${this.name} drank some ${item.name} from the ${location.name}.`);
   }
 
   takeNap() {
+    const here = world[this.location[0]][this.location[1]];
     this.rest = Math.min(this.rest + 70, maxRest);
-    addToQueue(`${this.name} took a nap near the ${world[this.location[0]][this.location[1]].name}.`);
+    addToQueue(`${this.name} took a nap near the ${here.name}.`);
   }
 
   travel() {
+
+    //TODO: refactor to memoize
 
     const direction = Math.floor(Math.random() * (4 - 0) + 0);
     let newLoc = null;
@@ -246,9 +249,10 @@ const mushrooms = new Consumable('mushrooms', 40, 0);
 const crayfish = new Consumable('crayfish', 50, 0);
 const trash = new Consumable('trash', 15, 0);
 
-const testCreature = new Human(0, {}, 'Bill', [0,1]);
+const testCreature1 = new Human(0, {}, 'Bill', [0,1]);
+const testCreature2 = new Human(0, {}, 'Ted', [1,2]);
 
-const arrayOfLife = [testCreature];
+const arrayOfLife = [testCreature1, testCreature2];
 
 // GameWorld
 ////
@@ -320,6 +324,8 @@ const world = [
   ]
 ];
 
+// Game Loop
+////
 const gameLoop = () => {
   arrayOfLife.forEach(livingThing => {
     if (livingThing.isAlive) {
