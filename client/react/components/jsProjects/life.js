@@ -13,6 +13,8 @@ const queueLength = 10;
 
 // Utils
 ////
+
+// TODO: refactor map structure (matrix -> graph)
 const changeLocation = (current, change) => {
   const newLocation = [];
   newLocation.push(current[0] + change[0]);
@@ -37,21 +39,23 @@ const addToQueue = string => {
 // Classes
 ////
 class Creature {
-  constructor(name, location, food, water, rest, happiness) {
+  constructor(name, location, invLimit = 1, food, water, rest, happiness, inventory = []) {
     this.name = name;
     this.location = location;
+    this.inventory = inventory;
+    this.invLimit = invLimit;
 
     this.food = maxFood;
-    this.foodRate = food;
+    this.foodRate = food / cyclesPerDay;
 
     this.water = maxWater;
-    this.waterRate = water;
+    this.waterRate = water / cyclesPerDay;
 
     this.rest = maxRest;
-    this.restRate = rest;
+    this.restRate = rest / cyclesPerDay;
 
     this.happiness = maxHappiness;
-    this.happinessRate = happiness;
+    this.happinessRate = happiness / cyclesPerDay;
 
     this.isAlive = true;
   }
@@ -60,7 +64,17 @@ class Creature {
     const needsArray = [this.food, this.water, this.rest, this.happiness];
     let highestIndex = 0;
 
+
+    // if all needs are met
     if (needsArray[0] > needsThreshold
+      && needsArray[1] > needsThreshold
+      && needsArray[2] > needsThreshold
+      && needsArray[3] > needsThreshold
+    ) {
+      highestIndex = -1;
+
+      // if basic needs are met (all but happiness)
+    } else if (needsArray[0] > needsThreshold
       && needsArray[1] > needsThreshold
       && needsArray[2] > needsThreshold
     ) {
@@ -69,6 +83,8 @@ class Creature {
           highestIndex = i;
         }
       }
+
+      // if not all basic needs are met
     } else {
       for (let i = 1; i < needsArray.length - 1; i++) {
         if (needsArray[highestIndex] > needsArray[i]) {
@@ -91,16 +107,22 @@ class Creature {
         this.travel();
       break;
       default:
-        this.tryToDrink();
+        this.prepare();
         break;
     }
 
   }
 
+  prepare() {
+    // forage, store supplies in home, etc
+  }
+
   tryToEat() {
     const here = world[this.location[0]][this.location[1]];
-    if (here.actions.forage !== undefined) {
-      this.forage(here.actions.forage, here);
+    if (here.actions.eat !== undefined) {
+      this.eat(here.actions.eat, here);
+    } else if (this.inventory.length > 0) {
+      // check for food in inventory
     } else {
       this.travel();
     }
@@ -110,6 +132,8 @@ class Creature {
     const here = world[this.location[0]][this.location[1]];
     if (here.actions.drink !== undefined) {
       this.drink(here.actions.drink, here);
+    } else if (this.inventory.length > 0) {
+      // check for drink in inventory
     } else {
       this.travel();
     }
@@ -133,7 +157,14 @@ class Creature {
 
   // Actions
   ////
-  forage(item, location) {
+  forage(location, foodOrDrinkBool) {
+
+    if (inventory.length < invLimit) {
+    // search based on bool
+    }
+  }
+
+  eat(item, location) {
     this.food = Math.min(this.food + item.foodValue, maxFood);
     addToQueue(`${this.name} ate some ${item.name} from the ${location.name}.`);
   }
@@ -151,7 +182,7 @@ class Creature {
 
   travel() {
 
-    //TODO: refactor to memoize
+    //TODO: refactor to work with map refactor (matrix -> graph)
 
     const direction = Math.floor(Math.random() * (4 - 0) + 0);
     let newLoc = null;
@@ -205,18 +236,18 @@ class Creature {
 
 class Human extends Creature {
   constructor(
-    money,
-    possessions = {},
     name = 'Hue Man',
     location = [0, 1],
-    food = 15 / cyclesPerDay,
-    water = 30 / cyclesPerDay,
-    rest = 25 / cyclesPerDay,
-    happiness = 6 / cyclesPerDay
+    invLimit = 6,
+    food = 15,
+    water = 30,
+    rest = 25,
+    happiness = 6,
+    inventory = [],
+    money = 0
   ) {
-    super(name, location, food, water, rest, happiness);
+    super(name, location, invLimit, food, water, rest, happiness, inventory);
     this.money = money;
-    this.inventory = possessions;
   }
 }
 
@@ -232,9 +263,19 @@ class Consumable extends Item {
     this.foodValue = foodValue;
     this.waterValue = waterValue;
   }
-  // consume() {
+  isFood() {
+    if (this.foodValue > 0 && this.foodValue > this.waterValue) {
+      return true;
+    }
+    return false;
+  }
 
-  // }
+  isDrink() {
+    if (this.waterValue > 0 && this.waterValue > this.foodValue) {
+      return true;
+    }
+    return false;
+  }
 }
 
 
@@ -249,8 +290,8 @@ const mushrooms = new Consumable('mushrooms', 40, 0);
 const crayfish = new Consumable('crayfish', 50, 0);
 const trash = new Consumable('trash', 15, 0);
 
-const testCreature1 = new Human(0, {}, 'Bill', [0,1]);
-const testCreature2 = new Human(0, {}, 'Ted', [1,2]);
+const testCreature1 = new Human('Bill', [0,1]);
+const testCreature2 = new Creature('muskcrat', [0,0], 20, 35, 15, 10);
 
 const arrayOfLife = [testCreature1, testCreature2];
 
@@ -261,20 +302,23 @@ const world = [
     {
       name: 'market',
       actions: {
-        forage: trash,
+        eat: trash,
         drink: dirtyWater
+      },
+      creatures: {
+
       }
     },
     {
       name: 'residences',
       actions: {
-        forage: trash
+        eat: trash
       }
     },
     {
       name: 'woods',
       actions: {
-        forage: berries,
+        eat: berries,
         drink: stillWater
       }
     }
@@ -289,14 +333,14 @@ const world = [
     {
       name: 'tavern',
       actions: {
-        forage: trash,
+        eat: trash,
         drink: freshWater
       }
     },
     {
       name: 'river',
       actions: {
-        forage: crayfish,
+        eat: crayfish,
         drink: freshWater
       }
     }
@@ -311,14 +355,14 @@ const world = [
     {
       name: 'cave',
       actions: {
-        forage: mushrooms
+        eat: mushrooms
       }
     },
     {
       name: 'lake',
       actions: {
         drink: stillWater,
-        forage: berries
+        eat: berries
       }
     }
   ]
